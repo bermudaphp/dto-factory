@@ -3,6 +3,7 @@
 namespace Bermuda\DtoFactory;
 
 use Psr\Container\ContainerInterface;
+use function Bermuda\Config\conf;
 
 class ConfigProvider extends \Bermuda\Config\ConfigProvider
 {
