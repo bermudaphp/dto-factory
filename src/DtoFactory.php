@@ -18,13 +18,14 @@ final class DtoFactory
     public function make(string $cls, array $data): DtoInterface
     {
         if (!is_subclass_of($cls, DtoInterface::class)) {
-            throw new \InvalidArgumentException('Argument [$cls] must be subclass of ' . DtoInterface::class);
+            throw new \InvalidArgumentException('Argument #1 ($cls) must be subclass of ' . DtoInterface::class);
         }
 
-        if ($this->hasFactory($cls)) dtoInstanceOf($cls, $dto = $this->factories[$cls]($data));
-        else $dto = $this->makeFromReflection($cls, $data);
-
-        return $dto;
+        foreach ($this->factories as $factory) {
+            if ($factory->canMake($cls)) return $factory->make($cls, $data);
+        }
+        
+        return $this->makeFromReflection($cls, $data);
     }
 
     public function hasFactory(string $cls): bool
@@ -47,7 +48,6 @@ final class DtoFactory
         foreach ($props as $property) {
             if (array_key_exists($property->getName(), $data)) {
                 if ($property->getAttributes(Without::class) != []) continue;
-
                 if ($property->getType()->getName() instanceof DtoInterface) {
                     $property->setValue($dto, $this->make($property->getType()->getName(), $data[$property->getName()]));
                 } else {
@@ -63,16 +63,5 @@ final class DtoFactory
         }
 
         return $dto;
-    }
-
-    /**
-     * @param string $cls
-     * @param callable $factory
-     * @return $this
-     */
-    public function addFactory(string $cls, callable $factory): self
-    {
-        $this->factories[$cls] = $factory;
-        return $this;
     }
 }
