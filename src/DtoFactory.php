@@ -36,9 +36,8 @@ final class DtoFactory implements DtoFactoryInterface
             throw new \InvalidArgumentException('Argument #1 ($cls) must be subclass of ' . DtoInterface::class);
         }
 
-        foreach ($this->factories as $factory) {
+        foreach ($this->factories as $factory) 
             if ($factory->canMake($cls)) return $factory->make($cls, $data);
-        }
         
         return $this->makeFromReflection($cls, $data);
     }
