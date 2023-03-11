@@ -1,6 +1,6 @@
 <?php
 
-namespace Bermuda\DtoFactory;
+namespace Bermuda\Dto;
 
 use Psr\Container\ContainerInterface;
 use function Bermuda\Config\conf;
