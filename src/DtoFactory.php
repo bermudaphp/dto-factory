@@ -1,11 +1,26 @@
 <?php
 
-namespace Bermuda\DTO;
+namespace Bermuda\Dto;
 
-final class DtoFactory
+final class DtoFactory implements DtoFactoryInterface
 {
     private array $factories = [];
     private array $reflectors = [];
+    
+    /**
+     * @param DtoFactoryInterface $factory
+     * @return $this
+     */
+    public function addFactory(DtoFactoryInterface $factory): self
+    {
+        $this->factories[$factory::class] = $factory;
+        return $this;
+    }
+    
+    public function canMake(string $cls): bool
+    {
+        return true;
+    }
 
     /**
      * @template T of DtoInterface
@@ -35,33 +50,31 @@ final class DtoFactory
 
     private function makeFromReflection(string $cls, array $data): DtoInterface
     {
-        if (!isset($this->reflectors[$cls])) {
-            $this->reflectors[$cls] = new \ReflectionClass($cls);
-        }
-
-        $reflector = $this->reflectors[$cls];
-
+        $reflector = $this->getReflector($cls);
         $dto = $reflector->newInstanceWithoutConstructor();
 
-        $props = $reflector->getProperties();
-
-        foreach ($props as $property) {
+        foreach ($reflector->getProperties() as $property) {
             if (array_key_exists($property->getName(), $data)) {
                 if ($property->getAttributes(Without::class) != []) continue;
                 if ($property->getType()->getName() instanceof DtoInterface) {
                     $property->setValue($dto, $this->make($property->getType()->getName(), $data[$property->getName()]));
-                } else {
-                    $property->setValue($dto, $data[$property->getName()]);
-                }
+                } else $property->setValue($dto, $data[$property->getName()]);
             } else {
-                if (!$property->isInitialized($dto) && $property->hasDefaultValue()) {
-                    $property->setValue($dto, $property->getDefaultValue());
-                } else if ($property->getType()->allowsNull()) {
-                     $property->setValue($dto, null);
-                }
+                if (!$property->isInitialized($dto) && $property->hasDefaultValue()) $property->setValue($dto, $property->getDefaultValue());
+                else if ($property->getType()->allowsNull()) $property->setValue($dto, null);
             }
         }
 
         return $dto;
+    }
+    
+    /**
+     * @param string $cls
+     * @return \ReflectionClass
+     * @throws \ReflectionException
+     */
+    private function getReflector(string $cls): \ReflectionClass
+    {
+        return $this->factories[$cls] ?? $this->factories[$cls] = new \ReflectionClass($cls);
     }
 }
