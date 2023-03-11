@@ -1,0 +1,13 @@
+{
+    "name": "bermudaphp/dto-factory",
+    "license": "MIT",
+    "autoload": {
+        "psr-4": {
+            "Bermuda\\DtoFactory\\": "src/"
+        }
+    },
+    "require": {
+        "php": "^8.1",
+        "bermudaphp/config": "^1.3"
+    }
+}
