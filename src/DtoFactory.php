@@ -19,7 +19,11 @@ final class DtoFactory implements DtoFactoryInterface
     
     public function canMake(string $cls): bool
     {
-        return true;
+        foreach($this->factories as $factory) {
+            if ($factory->canMake($cls)) return true;
+        }
+        
+        return $cls instanceof DtoInterface;
     }
 
     /**
@@ -28,7 +32,7 @@ final class DtoFactory implements DtoFactoryInterface
      * @param array $data
      * @return DtoInterface
      * @throws \InvalidArgumentException
-     * @throws DomainException
+     * @throws \DomainException
      */
     public function make(string $cls, array $data): DtoInterface
     {
@@ -36,9 +40,10 @@ final class DtoFactory implements DtoFactoryInterface
             throw new \InvalidArgumentException('Argument #1 ($cls) must be subclass of ' . DtoInterface::class);
         }
 
-        foreach ($this->factories as $factory) 
+        foreach ($this->factories as $factory) {
             if ($factory->canMake($cls)) return $factory->make($cls, $data);
-        
+        }
+            
         return $this->makeFromReflection($cls, $data);
     }
 
@@ -74,6 +79,6 @@ final class DtoFactory implements DtoFactoryInterface
      */
     private function getReflector(string $cls): \ReflectionClass
     {
-        return $this->factories[$cls] ?? $this->factories[$cls] = new \ReflectionClass($cls);
+        return $this->reflectors[$cls] ?? $this->reflectors[$cls] = new \ReflectionClass($cls);
     }
 }
