@@ -2,6 +2,8 @@
 
 namespace Bermuda\Dto;
 
+use Bermuda\Validation\ValidationException;
+
 interface DtoFactoryInterface
 {
   /**
@@ -11,6 +13,7 @@ interface DtoFactoryInterface
     * @return DtoInterface
     * @throws \InvalidArgumentException
     * @throws DtoFactoryException
+    * @throws ValidationException
     */
   public function make(string $dtoCls, array $data): DtoInterface ;
   public function canMake(string $dtoCls): bool ;
