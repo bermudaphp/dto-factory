@@ -2,10 +2,14 @@
 
 namespace Bermuda\Dto;
 
+use Bermuda\Validation\ValidationException;
+use Bermuda\Validation\ValidatorInterface;
+
 final class DtoFactory implements DtoFactoryInterface
 {
     private array $factories = [];
     private array $reflectors = [];
+    private array $validators = [];
     
     /**
      * @param DtoFactoryInterface $factory
@@ -15,6 +19,17 @@ final class DtoFactory implements DtoFactoryInterface
     {
         $this->factories[$factory::class] = $factory;
         return $this;
+    }
+
+    public function addValidator(string $cls, ValidatorInterface $validator): self
+    {
+        $this->validators[$cls] = $validator;
+        return $this;
+    }
+    
+    public function getValidator(string $cls):? ValidatorInterface
+    {
+        return $this->validators[$cls] ?? null ;
     }
     
     public function canMake(string $cls): bool
@@ -33,12 +48,15 @@ final class DtoFactory implements DtoFactoryInterface
      * @return DtoInterface
      * @throws \InvalidArgumentException
      * @throws \DomainException
+     * @throws ValidationException
      */
     public function make(string $cls, array $data): DtoInterface
     {
         if (!is_subclass_of($cls, DtoInterface::class)) {
             throw new \InvalidArgumentException('Argument #1 ($cls) must be subclass of ' . DtoInterface::class);
         }
+        
+        $this->getValidator($cls)?->validate($data);
 
         foreach ($this->factories as $factory) {
             if ($factory->canMake($cls)) return $factory->make($cls, $data);
