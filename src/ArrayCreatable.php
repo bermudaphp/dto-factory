@@ -4,5 +4,5 @@ namespace Bermuda\Dto;
 
 interface ArrayCreatable
 {
-    public static function fromArray(array $data): DtoInterface ;
+    public static function fromArray(array $data): static ;
 }
