@@ -55,14 +55,15 @@ final class DtoFactory implements DtoFactoryInterface
         if (!is_subclass_of($cls, DtoInterface::class)) {
             throw new \InvalidArgumentException('Argument #1 ($cls) must be subclass of ' . DtoInterface::class);
         }
-        
+
         $this->getValidator($cls)?->validate($data);
 
         foreach ($this->factories as $factory) {
             if ($factory->canMake($cls)) return $factory->make($cls, $data);
         }
-            
-        return $this->makeFromReflection($cls, $data);
+
+        return is_subclass_of($cls, ArrayCreatable::class) ? $cls::fromArray($data) :
+            $this->makeFromReflection($cls, $data);
     }
 
     public function hasFactory(string $cls): bool
