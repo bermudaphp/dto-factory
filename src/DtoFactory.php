@@ -2,6 +2,7 @@
 
 namespace Bermuda\Dto;
 
+use Bermuda\Reflection\TypeMatcher;
 use Bermuda\Validation\ValidationException;
 use Bermuda\Validation\ValidatorInterface;
 
@@ -79,9 +80,23 @@ final class DtoFactory implements DtoFactoryInterface
         foreach ($reflector->getProperties() as $property) {
             if (array_key_exists($property->getName(), $data)) {
                 if ($property->getAttributes(Without::class) != []) continue;
-                if ($property->getType()->getName() instanceof DtoInterface) {
-                    $property->setValue($dto, $this->make($property->getType()->getName(), $data[$property->getName()]));
-                } else $property->setValue($dto, $data[$property->getName()]);
+                if ($property->getType() instanceof \ReflectionIntersectionType
+                    || $property->getType() instanceof \ReflectionUnionType) {
+                    foreach ($property->getType()->getTypes() as $type) {
+                        if ($type?->getName() instanceof DtoInterface) {
+                            goto setDtoValue;
+                        }
+                    }
+
+                    goto setValue;
+                }
+                else if ($property->getType()->getName() instanceof DtoInterface) {
+                    setDtoValue:
+                    $property->setValue($dto, $this->make($type?->getName() ?? $property->getType()->getName(), $data[$property->getName()]));
+                } else {
+                    setValue:
+                    $property->setValue($dto, $data[$property->getName()]);
+                }
             } else {
                 if (!$property->isInitialized($dto) && $property->hasDefaultValue()) $property->setValue($dto, $property->getDefaultValue());
                 else if ($property->getType()->allowsNull()) $property->setValue($dto, null);
