@@ -5,7 +5,6 @@ namespace Bermuda\Dto;
 use Bermuda\Reflection\TypeMatcher;
 use Bermuda\Validation\ValidationException;
 use Bermuda\Validation\ValidatorInterface;
-use Invoker\InvokerInterface;
 
 final class DtoFactory implements DtoFactoryInterface
 {
@@ -13,11 +12,6 @@ final class DtoFactory implements DtoFactoryInterface
     private array $reflectors = [];
     private array $validators = [];
     
-    public function __construct(
-        private readonly InvokerInterface $invoker
-    ){
-    }
-
     /**
      * @param DtoFactoryInterface $factory
      * @return $this
@@ -69,7 +63,7 @@ final class DtoFactory implements DtoFactoryInterface
             if ($factory->canMake($cls)) return $factory->make($cls, $data);
         }
 
-        return is_subclass_of($cls, ArrayCreatable::class) ? $this->invoker->call([$cls, 'fromArray'], compact('data')) :
+        return is_subclass_of($cls, ArrayCreatable::class) ? $cls::fromArray($data) :
             $this->makeFromReflection($cls, $data);
     }
 
