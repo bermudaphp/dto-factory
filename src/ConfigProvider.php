@@ -2,6 +2,7 @@
 
 namespace Bermuda\Dto;
 
+use Invoker\InvokerInterface;
 use Psr\Container\ContainerInterface;
 use function Bermuda\Config\conf;
 
@@ -19,7 +20,7 @@ class ConfigProvider extends \Bermuda\Config\ConfigProvider
     {
         return [DtoFactory::class => static function(ContainerInterface $c) {
             $config = conf($c);
-            $factory = new DtoFactory();
+            $factory = new DtoFactory($c->get(InvokerInterface::class));
             if (
                 $config->offsetExists(self::configKey) 
                 && $config->offsetExists(self::factoriesConfigKey)
