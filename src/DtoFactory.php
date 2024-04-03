@@ -2,16 +2,21 @@
 
 namespace Bermuda\Dto;
 
+use Bermuda\Dto\Attribute\From;
+use Bermuda\Dto\Attribute\Cast;
+use Bermuda\Dto\Attribute\SkipProp;
+use Bermuda\Dto\Cast\CasterInterface;
 use Bermuda\Reflection\TypeMatcher;
 use Bermuda\Validation\ValidationException;
 use Bermuda\Validation\ValidatorInterface;
+use Invoker\InvokerInterface;
 
 final class DtoFactory implements DtoFactoryInterface
 {
     private array $factories = [];
     private array $reflectors = [];
     private array $validators = [];
-    
+
     /**
      * @param DtoFactoryInterface $factory
      * @return $this
@@ -32,7 +37,10 @@ final class DtoFactory implements DtoFactoryInterface
     {
         return $this->validators[$cls] ?? null ;
     }
-    
+
+    /**
+     * @inheritdoc
+     */
     public function canMake(string $cls): bool
     {
         foreach($this->factories as $factory) {
@@ -51,13 +59,13 @@ final class DtoFactory implements DtoFactoryInterface
      * @throws \DomainException
      * @throws ValidationException
      */
-    public function make(string $cls, array $data): DtoInterface
+    public function make(string $cls, array $data, bool $novalidate = false): DtoInterface
     {
         if (!is_subclass_of($cls, DtoInterface::class)) {
             throw new \InvalidArgumentException('Argument #1 ($cls) must be subclass of ' . DtoInterface::class);
         }
 
-        $this->getValidator($cls)?->validate($data);
+        if (!$novalidate) $this->getValidator($cls)?->validate($data);
 
         foreach ($this->factories as $factory) {
             if ($factory->canMake($cls)) return $factory->make($cls, $data);
@@ -78,8 +86,16 @@ final class DtoFactory implements DtoFactoryInterface
         $dto = $reflector->newInstanceWithoutConstructor();
 
         foreach ($reflector->getProperties() as $property) {
-            if (array_key_exists($property->getName(), $data)) {
-                if ($property->getAttributes(Without::class) != []) continue;
+            if ($property->getAttributes(SkipProp::class) != []) continue;
+            $from = $property->getAttributes(From::class)[0] ?? null;
+            if ($from) {
+                /**
+                 * @var From $from
+                 */
+                $from = $from->newInstance();
+            }
+            $key = $from?->key ?? $property->getName();
+            if (array_key_exists($key, $data)) {
                 if ($property->getType() instanceof \ReflectionIntersectionType
                     || $property->getType() instanceof \ReflectionUnionType) {
                     foreach ($property->getType()->getTypes() as $type) {
@@ -87,15 +103,23 @@ final class DtoFactory implements DtoFactoryInterface
                             goto setDtoValue;
                         }
                     }
-
                     goto setValue;
                 }
                 else if ($property->getType()->getName() instanceof DtoInterface) {
                     setDtoValue:
-                    $property->setValue($dto, $this->make($type?->getName() ?? $property->getType()->getName(), $data[$property->getName()]));
+                    $property->setValue($dto, $this->make($type?->getName() ?? $property->getType()->getName(), $data[$key]));
                 } else {
                     setValue:
-                    $property->setValue($dto, $data[$property->getName()]);
+                    /**
+                     * @var CasterInterface $cast
+                     */
+                    $cast = $property->getAttributes(Cast::class)[0] ?? null;
+                    if ($cast) {
+                        $cast = $cast->newInstance();
+                        $propValue = $cast($data[$key]);
+                    }
+
+                    $property->setValue($dto, $propValue ?? $data[$key]);
                 }
             } else {
                 if (!$property->isInitialized($dto) && $property->hasDefaultValue()) $property->setValue($dto, $property->getDefaultValue());
