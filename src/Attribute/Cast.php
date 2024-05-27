@@ -4,23 +4,50 @@ namespace Bermuda\Dto\Attribute;
 
 use Bermuda\Dto\Cast\CasterInterface;
 
-#[\Attribute(\Attribute::TARGET_PROPERTY)] class Cast
+#[\Attribute(\Attribute::TARGET_PROPERTY)] class Cast implements \ContainerAwareInterface
 {
+    use \ContainerAwareTrait;
+
+    /**
+     * @var callable|class-string<T>
+     */
+    private $caster;
     private array $args = [];
+
+    private static array $aliases = [];
 
     /**
      * @template T of CasterInterface
-     * @param class-string<T> $caster
+     * @param class-string<T>|string $caster
      */
     public function __construct(
-        private readonly string $caster,
+        string|callable $caster,
         mixed ... $args
     ){
         $this->args = $args;
+        $this->caster = $caster;
     }
 
     public function __invoke(mixed $prop): mixed
     {
-        return (new $this->caster(...$this->args))->cast($prop);
+        if (is_callable($this->caster)) {
+            return ($this->caster)($prop, ... $this->args);
+        }
+
+        if (isset(self::$aliases[$this->caster])) {
+            return self::$aliases[$this->caster]($prop);
+        }
+
+        $caster = new ($this->caster)(...$this->args);
+        if ($caster instanceof \ContainerAwareInterface) {
+            $caster->setContainer($this->container);
+        }
+
+        return $caster->cast($prop);
+    }
+
+    public static function setAlias(string $alias, callable $callback): void
+    {
+        self::$aliases[$alias] = $callback;
     }
 }
