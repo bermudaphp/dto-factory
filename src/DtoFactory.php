@@ -2,17 +2,22 @@
 
 namespace Bermuda\Dto;
 
+use Bermuda\Dto\Attribute\Defaults;
 use Bermuda\Dto\Attribute\From;
 use Bermuda\Dto\Attribute\Cast;
+use Bermuda\Dto\Attribute\Invoke;
 use Bermuda\Dto\Attribute\SkipProp;
 use Bermuda\Dto\Cast\CasterInterface;
 use Bermuda\Reflection\TypeMatcher;
 use Bermuda\Validation\ValidationException;
 use Bermuda\Validation\ValidatorInterface;
 use Invoker\InvokerInterface;
+use Psr\Container\ContainerInterface;
 
-final class DtoFactory implements DtoFactoryInterface
+final class DtoFactory implements DtoFactoryInterface, \ContainerAwareInterface
 {
+    use \ContainerAwareTrait;
+
     private array $factories = [];
     private array $reflectors = [];
     private array $validators = [];
@@ -48,6 +53,11 @@ final class DtoFactory implements DtoFactoryInterface
         }
         
         return $cls instanceof DtoInterface;
+    }
+
+    public static function fromContainer(ContainerInterface $container): self
+    {
+
     }
 
     /**
@@ -88,13 +98,20 @@ final class DtoFactory implements DtoFactoryInterface
         foreach ($reflector->getProperties() as $property) {
             if ($property->getAttributes(SkipProp::class) != []) continue;
             $from = $property->getAttributes(From::class)[0] ?? null;
+            $key = null;
             if ($from) {
                 /**
                  * @var From $from
                  */
                 $from = $from->newInstance();
+                if (($from->ifNull)) {
+                    if (empty($data[$property->getName()])) $key = $from->key;
+                } else {
+                    $key = $from->key;
+                }
             }
-            $key = $from?->key ?? $property->getName();
+
+            $key = $key ?? $property->getName();
             if (array_key_exists($key, $data)) {
                 if ($property->getType() instanceof \ReflectionIntersectionType
                     || $property->getType() instanceof \ReflectionUnionType) {
@@ -114,15 +131,29 @@ final class DtoFactory implements DtoFactoryInterface
                      * @var CasterInterface $cast
                      */
                     $cast = $property->getAttributes(Cast::class)[0] ?? null;
+                    $propValue = null;
+
                     if ($cast) {
-                        $cast = $cast->newInstance();
+                        ($cast = $cast->newInstance())
+                            ->setContainer($this->container);
                         $propValue = $cast($data[$key]);
                     }
 
                     $property->setValue($dto, $propValue ?? $data[$key]);
                 }
             } else {
-                if (!$property->isInitialized($dto) && $property->hasDefaultValue()) $property->setValue($dto, $property->getDefaultValue());
+                $defaults = $property->getAttributes(Defaults::class)[0] ?? null;
+                if (!$defaults) $defaults = $property->getAttributes(Invoke::class)[0] ?? null;
+                if ($defaults) {
+                    /**
+                     * @var Defaults|Invoke $defaults
+                     */
+                    $defaults = $defaults->newInstance();
+                    $property->setValue($dto, $defaults instanceof Invoke
+                        ? $defaults->__invoke() : $defaults->value
+                    );
+                }
+                else if (!$property->isInitialized($dto) && $property->hasDefaultValue()) $property->setValue($dto, $property->getDefaultValue());
                 else if ($property->getType()->allowsNull()) $property->setValue($dto, null);
             }
         }

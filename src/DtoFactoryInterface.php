@@ -16,5 +16,11 @@ interface DtoFactoryInterface
     * @throws ValidationException
     */
   public function make(string $dtoCls, array $data): DtoInterface ;
+
+    /**
+     * @template T of DtoInterface
+     * @param class-string<T> $dtoCls
+     * @return bool
+     */
   public function canMake(string $dtoCls): bool ;
 }
