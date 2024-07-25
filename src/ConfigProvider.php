@@ -9,8 +9,8 @@ use function Bermuda\Config\conf;
 
 class ConfigProvider extends \Bermuda\Config\ConfigProvider
 {
-    const configKey = 'Bermuda\FactoryFactory';
-    const factoriesConfigKey = 'factories';
+    const configKey = 'Bermuda\Factory';
+    const factoriesConfigKey = 'FACTORIES';
 
     protected function getFactories(): array
     {
