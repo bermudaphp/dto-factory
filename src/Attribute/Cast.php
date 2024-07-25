@@ -1,8 +1,8 @@
 <?php
 
-namespace Bermuda\Dto\Attribute;
+namespace Bermuda\Factory\Attribute;
 
-use Bermuda\Dto\Cast\CasterInterface;
+use Bermuda\Factory\Cast\CasterInterface;
 
 #[\Attribute(\Attribute::TARGET_PROPERTY)] class Cast implements \ContainerAwareInterface
 {

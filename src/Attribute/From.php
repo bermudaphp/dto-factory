@@ -1,6 +1,6 @@
 <?php
 
-namespace Bermuda\Dto\Attribute;
+namespace Bermuda\Factory\Attribute;
 
 #[\Attribute(\Attribute::TARGET_PROPERTY)] class From
 {
