@@ -16,7 +16,7 @@ final class Slugify implements CasterInterface, \ContainerAwareInterface
     public function cast(mixed $castable): string
     {
         static $slugger = null;
-        if ($this->container && $this->container->has(SluggerInterface::class)) {
+        if ($this->container && $this->container->has(SlugifyInterface::class)) {
             $slugger = $this->container->get(SlugifyInterface::class);
         } else $slugger = new \Cocur\Slugify\Slugify();
         
