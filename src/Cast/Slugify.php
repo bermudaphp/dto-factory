@@ -1,10 +1,9 @@
 <?php
 
-namespace Bermuda\Dto\Cast;
+namespace Bermuda\Factory\Cast;
 
+use Cocur\Slugify\SlugifyInterface;
 use Psr\Container\ContainerInterface;
-use Slugger\Slugger;
-use Slugger\SluggerInterface;
 
 final class Slugify implements CasterInterface, \ContainerAwareInterface
 {
@@ -16,7 +15,11 @@ final class Slugify implements CasterInterface, \ContainerAwareInterface
      */
     public function cast(mixed $castable): string
     {
-        $slugger = $this->container->get(SluggerInterface::class);
+        static $slugger = null;
+        if ($this->container && $this->container->has(SluggerInterface::class)) {
+            $slugger = $this->container->get(SlugifyInterface::class);
+        } else $slugger = new \Cocur\Slugify\Slugify();
+        
         return $slugger->slugify($castable);
     }
 }
