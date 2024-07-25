@@ -26,6 +26,7 @@ final class ObjectFactory implements \ContainerAwareInterface
     private array $reflectors = [];
     private array $validators = [];
 
+
     /**
      * @param DtoFactoryInterface $factory
      * @return $this
@@ -34,7 +35,7 @@ final class ObjectFactory implements \ContainerAwareInterface
     {
         $this->factories[$factory::class] = $factory;
 
-        if ($factory instanceof ContainerAwareInterface) {
+        if ($this->container && $factory instanceof ContainerAwareInterface) {
             $factory->setContainer($this->container);
         }
 
