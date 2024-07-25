@@ -3,7 +3,10 @@
 namespace Bermuda\Factory;
 
 use Bermuda\Factory\Attribute\Cast;
+use Cocur\Slugify\Slugify;
+use Cocur\Slugify\SlugifyInterface;
 use Psr\Container\ContainerInterface;
+
 use function Bermuda\Config\callback;
 use function Bermuda\Config\conf;
 
@@ -24,5 +27,15 @@ class ConfigProvider extends \Bermuda\Config\ConfigProvider
                 Cast::setAlias('json', static fn(string $encoded): array => json_decode($encoded, true, flags: JSON_THROW_ON_ERROR));
             })
         ];
+    }
+
+    protected function getAliases(): array
+    {
+        return [SlugifyInterface::class => Slugify::class];
+    }
+
+    protected function getInvokables(): array
+    {
+        return [Slugify::class];
     }
 }
