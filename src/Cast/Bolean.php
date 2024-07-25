@@ -1,6 +1,6 @@
 <?php
 
-namespace Bermuda\Dto\Cast;
+namespace Bermuda\Factory\Cast;
 
 use Bermuda\Stdlib\StrHelper;
 
