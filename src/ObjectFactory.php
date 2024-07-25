@@ -2,18 +2,15 @@
 
 namespace Bermuda\Factory;
 
-use Bermuda\Authenticator\User\UserInterface;
 use Bermuda\Factory\Attribute\Defaults;
 use Bermuda\Factory\Attribute\From;
 use Bermuda\Factory\Attribute\Cast;
 use Bermuda\Factory\Attribute\Invoke;
 use Bermuda\Factory\Attribute\SkipProp;
 use Bermuda\Factory\Cast\CasterInterface;
-use Bermuda\Reflection\TypeMatcher;
 use Bermuda\Validation\ValidationException;
 use Bermuda\Validation\ValidatorInterface;
 use ContainerAwareInterface;
-use Entity\User\User;
 use Invoker\InvokerInterface;
 use Psr\Container\ContainerInterface;
 use ReflectionClass;
