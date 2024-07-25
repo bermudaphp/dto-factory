@@ -1,6 +1,6 @@
 <?php
 
-namespace Bermuda\Dto;
+namespace Bermuda\Factory;
 
 interface ArrayCreatable
 {
