@@ -2,6 +2,8 @@
 
 namespace Bermuda\Factory;
 
+use Bermuda\ContainerAwareInterface;
+use Bermuda\ContainerAwareTrait;
 use Bermuda\Factory\Attribute\Defaults;
 use Bermuda\Factory\Attribute\From;
 use Bermuda\Factory\Attribute\Cast;
@@ -10,14 +12,13 @@ use Bermuda\Factory\Attribute\SkipProp;
 use Bermuda\Factory\Cast\CasterInterface;
 use Bermuda\Validation\ValidationException;
 use Bermuda\Validation\ValidatorInterface;
-use ContainerAwareInterface;
 use Invoker\InvokerInterface;
 use Psr\Container\ContainerInterface;
 use ReflectionClass;
 
-final class ObjectFactory implements \ContainerAwareInterface
+final class ObjectFactory implements ContainerAwareInterface
 {
-    use \ContainerAwareTrait;
+    use ContainerAwareTrait;
 
     private array $factories = [];
     private array $reflectors = [];
