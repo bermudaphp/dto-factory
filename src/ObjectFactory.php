@@ -16,7 +16,7 @@ use Invoker\InvokerInterface;
 use Psr\Container\ContainerInterface;
 use ReflectionClass;
 
-final class ObjectFactory implements ContainerAwareInterface
+final class ObjectFactory implements ContainerAwareInterface, ObjectFactoryInterface
 {
     use ContainerAwareTrait;
 
@@ -73,13 +73,10 @@ final class ObjectFactory implements ContainerAwareInterface
     {
         $factory = $this->getFactory($cls);
 
-        if ($novalidate) {
-            if ($factory) return $factory->makeWithoutValidation($data, $cls);
-            else if (is_subclass_of($cls, ArrayCreatable::class)) return $cls::fromArray($data);
-            else return $this->makeFromReflection($cls, $data);
+        if (!$novalidate) {
+            $this->getValidator($cls)?->validate($data);
         }
-
-        $this->getValidator($cls)?->validate($data);
+        
         return is_subclass_of($cls, ArrayCreatable::class) ? $cls::fromArray($data) :
             $this->makeFromReflection($cls, $data);
     }
