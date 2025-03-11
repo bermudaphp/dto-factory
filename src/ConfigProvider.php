@@ -31,7 +31,10 @@ class ConfigProvider extends \Bermuda\Config\ConfigProvider
 
     protected function getAliases(): array
     {
-        return [SlugifyInterface::class => Slugify::class];
+        return [
+            ObjectFactoryInterface::class => ObjectFactory::class,
+            SlugifyInterface::class => Slugify::class
+        ];
     }
 
     protected function getInvokables(): array
