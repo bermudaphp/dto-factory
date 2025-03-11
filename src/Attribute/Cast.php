@@ -4,9 +4,9 @@ namespace Bermuda\Factory\Attribute;
 
 use Bermuda\Factory\Cast\CasterInterface;
 
-#[\Attribute(\Attribute::TARGET_PROPERTY)] class Cast implements \ContainerAwareInterface
+#[\Attribute(\Attribute::TARGET_PROPERTY)] class Cast implements \Bermuda\ContainerAwareInterface
 {
-    use \ContainerAwareTrait;
+    use \Bermuda\ContainerAwareTrait;
 
     /**
      * @var callable|class-string<T>
