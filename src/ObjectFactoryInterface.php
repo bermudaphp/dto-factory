@@ -21,14 +21,5 @@ interface ObjectFactoryInterface
      * @throws FactoryException
      * @throws ValidationException
      */
-    public function make(string $cls, array $data): object ;
-
-    /**
-     * @template T of object
-     * @param class-string<T> $cls
-     * @param array $data
-     * @return T
-     * @throws FactoryException
-     */
-    public function makeWithoutValidation(string $cls, array $data): object ;
+    public function make(string $cls, array $data, bool $novalidate = false): object ;
 }
