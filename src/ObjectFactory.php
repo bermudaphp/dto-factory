@@ -8,7 +8,7 @@ use Bermuda\Factory\Attribute\Defaults;
 use Bermuda\Factory\Attribute\From;
 use Bermuda\Factory\Attribute\Cast;
 use Bermuda\Factory\Attribute\Invoke;
-use Bermuda\Factory\Attribute\SkipProp;
+use Bermuda\Factory\Attribute\Skip;
 use Bermuda\Factory\Cast\CasterInterface;
 use Bermuda\Validation\ValidationException;
 use Bermuda\Validation\ValidatorInterface;
