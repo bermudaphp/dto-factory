@@ -2,11 +2,12 @@
 
 namespace Bermuda\Factory\Cast;
 
+use Bermuda\ContainerAwareInterface;
 use Bermuda\ContainerAwareTrait;
 use Cocur\Slugify\SlugifyInterface;
 use Psr\Container\ContainerInterface;
 
-final class Slugify implements CasterInterface, \ContainerAwareInterface
+final class Slugify implements CasterInterface, ContainerAwareInterface
 {
     use ContainerAwareTrait;
 
